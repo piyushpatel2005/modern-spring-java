@@ -7,3 +7,5 @@
 3. `@ComponentScan`: enables component scanning. This lets you declare other classes with annotations like `@Component`, `@Controller`, `@Service` and others to have Spring auto-discover them and register them as components in application context. 
 
 Spring Boot application also comes with tests. Tests are annotated with `@RunWith` to provide the class runner.
+
+For mapping different types of HTTP methods, we have `@GetMapping`, `@PostMapping` and so on annotations. `@RequestMapping` specifies the path to map for any controller class.
