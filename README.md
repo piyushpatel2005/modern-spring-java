@@ -9,3 +9,5 @@
 Spring Boot application also comes with tests. Tests are annotated with `@RunWith` to provide the class runner.
 
 For mapping different types of HTTP methods, we have `@GetMapping`, `@PostMapping` and so on annotations. `@RequestMapping` specifies the path to map for any controller class.
+
+Java Bean validation API helps us validate user input using simple annotations like `@NotNull`, `@NotBlank`, etc.
