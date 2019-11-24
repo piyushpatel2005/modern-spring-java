@@ -11,3 +11,43 @@ Spring Boot application also comes with tests. Tests are annotated with `@RunWit
 For mapping different types of HTTP methods, we have `@GetMapping`, `@PostMapping` and so on annotations. `@RequestMapping` specifies the path to map for any controller class.
 
 Java Bean validation API helps us validate user input using simple annotations like `@NotNull`, `@NotBlank`, etc.
+
+Any configuration class can implement `WebMvcConfigurer` and override `addViewController` method. So, we can define home page view controller in the `TacoCloudApplication` class as below.
+
+```java
+@SpringBootApplication
+public class TacoCloudApplication implements WebMvcConfigurer {
+
+	public static void main(String[] args) {
+		SpringApplication.run(TacoCloudApplication.class, args);
+	}
+
+	@Override
+	public void addViewControllers(ViewControllerRegistry registry) {
+		registry.addViewController("/").setViewName("home");
+	}
+}
+```
+
+Usually, each kind of configuration are defined in separate configuration class to keep application bootstrap configuration class clean.
+
+There are few template options supported by Spring Boot. Below table gives the template with its starter library
+
+| Table | Spring boot starter library |
+|:---------:|:-------:|
+|FreeMarker | spring-boot-starter-freemarker |
+| Groovy Templates | spring-boot-starter-groovy-templates |
+| JavaServer Pages (JSP) | None |
+| Mustache | spring-boot-starter-mustache |
+| Thymeleaf | spring-boot-starter-thymeleaf |
+
+Spring Boot will detect your chosen template library and automatically configure the components for it to serve views. JSP is only an option if you're building your application as a WAR file and deploying it in a traditional servlet container. By default, templates are only parsed once, when we first used and the results of that parse are cached for subsequent use. There's a way to disable caching for development. For that, we need to set a template-appropriate caching property to `false`. By default these are true, we can disable using `application.properties` file.
+
+```
+spring.thymeleaf.cache=false
+spring.groovy.template.cache=false
+spring.mustache.cache=false
+spring.freemarker.cache=false
+```
+
+For production, we need to remove this one, better way is to set it in profiles or use DevTools for development.
