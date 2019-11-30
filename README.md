@@ -59,3 +59,8 @@ JDBC support is in `JdbcTemplate` class. To work with JdbcTemplate, we need to a
 [Data models](models.md)
 
 `@SessionAttribute` specifies any model objets like the order attribute that should be kept in session and available across multiple requests. `@ModelAttribute` annotation on `order()` ensures that an Order object will be created in the model. The Order object remains in the sesion and isn't saved to database until the user completes and submits the order form. At the end, `OrderController` will save the order. `SimpleJdbcInsert` wraps `JdbcTemplate` to make it easier to insert data into a table. Check `JdbcOrderRepository` for example.
+
+
+## JPA Support using Spring Data
+
+[Spring Data](notes/spring-data.md)
