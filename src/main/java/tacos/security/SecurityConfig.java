@@ -57,6 +57,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	public PasswordEncoder encoder() {
 		return new StandardPasswordEncoder("53cr3t");
 	}
+
 	
 	// LDAP authentication
 //	@Override
@@ -66,4 +67,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //			.userSearchFilter("(uid={0})")
 //			.groupSearchFilter("member={0}");
 //	}
+	
+//	@Autowired
+//	DataSource dataSource;
+//	
+//	@Override 
+//	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+//		auth
+//			.jdbcAuthentication()
+//			.dataSource(dataSource)
+//			.userByUsernameQuery(
+//					"select username, password, enabled from Users where username=?"
+//			).authoritiesByUsernameQuery(
+//					"select username, authority from UserAuthorities where username=?"
+//			).passwordEncoder(new StandardPasswordEncoder("53cr3t"));
+//			
+//			
+//	}
+
 }

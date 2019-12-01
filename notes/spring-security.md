@@ -141,3 +141,124 @@ auth
 To customize user data we can create `User` class with required fields. In `UserRepository`, we defined `findByUsername()` that will be used to look up a user by their username.
 
 To get user details, we can use `UserDetailsService` which is a simple interface with only one method `loadUserByUsername(String username)` that can be used to fetch user details. To configure user details service with Spring security we need to define `configure()` method. As with JDBC-based authentication, you can also configure a password encoder so that the password can be encoded in the database. Check the bean of type `PasswordEncoder` and inject that using `passwordEncoder()` method call.
+
+For registering a user, we created RegistrationController class where we display registration form and when user submits registration form, we process registration using `processRegistration()` method. The `RegistrationForm` object passed to `processRegistration()` is bound to the request data.
+
+In this app, we block only authenticated users to design a taco and place an order. To configure these security rules, we need to use `WebSecurityConfigurerAdapter`'s `configure()` method with `HttpSecurity`.
+
+This could be configured as below.
+
+```java
+protected void configure(HttpSecurity http) throws Exception {
+  http
+    .authorizeRequests()
+      .antMatchers("/design", "/orders")
+        .hasRole("ROLE_USER")
+      .antMatchers("/", "/**").permitAll();
+}
+```
+
+Requests for `/design` and `/orders` should be for users with granted authority of ROLE_USER and all requests should be permitted to all users. Here, the order of rules is very important. We can also use the `access()` method to provide SpEL expression to declare richer security rules.
+
+| Security Expression | What it evalutes to |
+|:--------------------|:--------------------|
+| authentication | user's authentication object |
+| denyAll | always evaluates to false |
+| hasAnyRole(list of roles) | true if the user has an of the roles |
+| hasRole(role) | true if user has the given role |
+| hasIpAddress(IP address) | true if request comes from given IP |
+| isAnonymous() | true if the user is anonymous |
+| isAuthenticated() | true if the user is authenticated |
+| isFullyAuthenticated() | true if the user is fully authenticated (not with remember-me) |
+| isRememberMe() | true if the user was authenticated via remember-me |
+| permitAll | always evaluates to true |
+| principal | the user's principal object |
+
+With such expression language, we configure complicated rules. For example if we wanted to allow user with ROLE_USER authority to create new Tacos on Tuesdays, we can write like this.
+
+```java
+http
+  .authorizeRequests()
+    .antMatchers("/design", "/orders")
+      .access("hasRole('ROLE_USER') && T(java.util.Calendar).getInstance().get(" +
+        "T(java.util.Calendar).DAY_OF_WEEK) == T(java.util.Calendar).TUESDAY")
+    .antMatchers("/", "/**").access("permitAll");
+```
+
+We can replace provided login page by calling `formLogin()` in `configure()` method. For serving this login page, we only need a view controller which we can add in the `WebConfig` class. 
+
+If in the login form, our username and password are with different name attributes than `username` and `password`, we can configure field names using following snippet.
+
+```java
+.and()
+  .formLogin()
+    .loginPage("/login")
+    .loginProcessingUrl("/authenticate")
+    .usernameParameter("user")
+    .passwordParameter("pwd")
+```
+
+By default, a successful login will take the user directly to the page that they were navigating to when Spring Security determined that they needed to login. If the user were to directly navigate to the login page, a successful login would take them to the root path. We can change that by specifying default success page.
+
+Optionally, we can force the user to the design page after login even if they were navigatin elsewhere prior to logging in, by passing true as second parameter to `defaultSuccessUrl`.
+
+```java
+.and()
+  .formLogin()
+    .loginPage("/login")
+    .defaultSuccessUrl("/design")
+```
+
+To enable user to logout, we use `logout()` method and add a snippet of code with form which posts to `/logout` path.
+
+**Cross-site request forgery (CSRF)** can be blocked by generating CSRF token upon displaying a form. Spring securiyt makes it easy by placing the CSRF token in a request attribute with the name `_csrf`. WE can disable CSRF using `.and().csrf().disable()`. 
+
+It's important that when user is logged in, they don't have to fill up their details again if the details are already present in their account information. It would be nice if we could prepopulate `Order` with user's name and address so that they don't have to reenter it for each order. We should associate the ORder with the User that created the order. We add `@ManyToOne` relationship with User in Order domain class.
+
+There are several ways to determine who the logged in user is.
+
+1. Inject `Principal` object into the controller method.
+
+```java
+public String processOrder(@Valid Order order, Errors errors, Sessionstatus sessionStatus, Principal principal) {
+... ....
+User user = userRepository.findByUsername(principal.getName());
+order.setUser(user);
+...
+}
+```
+
+2. Inject `Authentication` object into the controller method
+
+```java
+public String processOrder(@Valid Order order, Errors errors, SessionStatus sessionStatus, Authentication authentication) {
+...
+User user = (User) authentication.getPrincipal();
+order.setUser(user);
+...
+}
+```
+
+3. User `SecurityContextHolder` to get the security context.
+
+This can be used anywhere but its heavy with security specific code.
+
+```java
+Authentation authentication = SecurityContextHolder.getContext().getAuthentication();
+User user = (User) authentication.getPrincipal();
+```
+
+4. Use an `@AuthenticationPrincipal` annotated method. (best option)
+
+```java
+public String processOrder(@Valid Order order, Errors errors, SessionStatus sessionStatus, @AuthenticatedPrincipal User user) {
+  if (errors.hasErrors()) {
+    return "orderForm";
+  }
+  order.setUser(user);
+  
+  orderRepo.save(order);
+  sessionStatus.setComplete();
+  return "redirect:/";
+}
+```

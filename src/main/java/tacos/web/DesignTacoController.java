@@ -1,10 +1,10 @@
 package tacos.web;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +18,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
 import lombok.extern.slf4j.Slf4j;
-import tacos.Taco;
 import tacos.Ingredient;
 import tacos.Ingredient.Type;
 import tacos.Order;
-import tacos.data.TacoRepository;
+import tacos.Taco;
+import tacos.User;
 import tacos.data.IngredientRepository;
+import tacos.data.TacoRepository;
+import tacos.data.UserRepository;
 
 @Slf4j
 @Controller
@@ -34,13 +36,17 @@ public class DesignTacoController {
   private final IngredientRepository ingredientRepo;
 
   private TacoRepository designRepo;
+  
+  private UserRepository userRepo;
 
   @Autowired
   public DesignTacoController(
         IngredientRepository ingredientRepo, 
-        TacoRepository designRepo) {
+        TacoRepository designRepo,
+        UserRepository userRepo) {
     this.ingredientRepo = ingredientRepo;
     this.designRepo = designRepo;
+    this.userRepo = userRepo;
   }
 
   @ModelAttribute(name = "order")
@@ -48,14 +54,15 @@ public class DesignTacoController {
     return new Order();
   }
   
-  @ModelAttribute(name = "taco")
-  public Taco taco() {
+  @ModelAttribute(name = "design")
+  public Taco design() {
     return new Taco();
   }
 
   
   @GetMapping
-  public String showDesignForm(Model model) {
+  public String showDesignForm(Model model, Principal principal) {
+  	log.info("---Designing taco");
     List<Ingredient> ingredients = new ArrayList<>();
     ingredientRepo.findAll().forEach(i -> ingredients.add(i));
     
@@ -64,6 +71,10 @@ public class DesignTacoController {
       model.addAttribute(type.toString().toLowerCase(), 
           filterByType(ingredients, type));      
     }
+    
+    String username = principal.getName();
+    User user = userRepo.findByUsername(username);
+    model.addAttribute("user", user);
 
     return "design";
   }
@@ -77,6 +88,7 @@ public class DesignTacoController {
       return "design";
     }
 
+    log.info(" --- Saving taco");
     // save Taco
     Taco saved = designRepo.save(design);
     // add Taco to list orders table
