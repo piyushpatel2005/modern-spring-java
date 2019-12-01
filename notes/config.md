@@ -153,3 +153,7 @@ public class OrderController {
 ```
 
 Now, the `taco.orders.pageSize` defaults to 20, but can be easily changed using `taco.orders.pageSize` property or using `export TACO_ORDERS_PAGESIZE=10`.
+
+`@ConfigurationProperties` can be set on any beans. We can set such on a bean whose sole purpose is to hold configuration data as shown in `tacos.web.OrderProps` class. It is annotated with `@Component` for Spring component scanning to automatically discover it. We inject this in OrderController to use it. Having a separate bean allows to keep controller code cleaner and reuse the properties in any other bean that may need them. All the properties pertaining to orders is in one place. This makes it easy to write validation code for these props easier as we can annotate with `@Min` or `@Max` in one place.
+
+When we define a new property, we need to configure property metadata so that IDEs can help us suggesting properties. Metadata also provides minimal documentation. To create metadata for custom configuration properties, you'll need to create a file udner `src/main/resources/META-INF` named `additional-spring-configuration-metadata.json`. This could be created using IDE when we hover over these property in configuration file. Once we define description for the file, hovering this property will show description summary.

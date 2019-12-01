@@ -1,0 +1,6 @@
+#spring:
+#  security:#    user:#      name: buzz
+#      password: infinity
+#      
+taco:  orders:    page-size: 10
+    
