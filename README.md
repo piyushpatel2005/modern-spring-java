@@ -68,3 +68,7 @@ JDBC support is in `JdbcTemplate` class. To work with JdbcTemplate, we need to a
 ## Spring Security
 
 [Spring Security](notes/spring-security.md)
+
+## Configuring properties
+
+[Customizing Spring application with configuration](notes/config.md)
