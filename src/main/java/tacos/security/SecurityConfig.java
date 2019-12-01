@@ -13,7 +13,6 @@ import org.springframework.security.crypto.password.StandardPasswordEncoder;
 
 @Configuration
 @EnableWebSecurity
-@SuppressWarnings("depreciation")
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Autowired
@@ -32,25 +31,25 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			.authorizeRequests()
 			.antMatchers("/design", "/orders")
 				.access("hasRole('ROLE_USER')")
-			.antMatchers("/", "/**")
+			.antMatchers("/**")
 				.access("permitAll")
 			// specify form login page to use for logging in
 			.and()
 				.formLogin()
-				.loginPage("/login")
+					.loginPage("/login")
 			// specify logout and redirection url after logging out
 			.and()
 				.logout()
-				.logoutSuccessUrl("/")
+					.logoutSuccessUrl("/")
 			// Make H2 console non-secured for debug purposes
 			.and()
 				.csrf()
-				.ignoringAntMatchers("/h2-console/**")
+				 .ignoringAntMatchers("/h2-console/**")
 			// Allow pages to be loaded in frames from the same origin, for H2 console 
 			.and()
 				.headers()
-				.frameOptions()
-				.sameOrigin();
+				 	.frameOptions()
+				   	.sameOrigin();
 	}
 	
 	@Bean

@@ -157,3 +157,62 @@ Now, the `taco.orders.pageSize` defaults to 20, but can be easily changed using 
 `@ConfigurationProperties` can be set on any beans. We can set such on a bean whose sole purpose is to hold configuration data as shown in `tacos.web.OrderProps` class. It is annotated with `@Component` for Spring component scanning to automatically discover it. We inject this in OrderController to use it. Having a separate bean allows to keep controller code cleaner and reuse the properties in any other bean that may need them. All the properties pertaining to orders is in one place. This makes it easy to write validation code for these props easier as we can annotate with `@Min` or `@Max` in one place.
 
 When we define a new property, we need to configure property metadata so that IDEs can help us suggesting properties. Metadata also provides minimal documentation. To create metadata for custom configuration properties, you'll need to create a file udner `src/main/resources/META-INF` named `additional-spring-configuration-metadata.json`. This could be created using IDE when we hover over these property in configuration file. Once we define description for the file, hovering this property will show description summary.
+
+### Profiles
+
+Different environments have different configurations for database and many others. We can use Spring profiles for conditional configuration where different beans, configuration classes and configuration properties are applied or ignored based on what profiles are active at runtime.
+
+One way to define profile-specific properties is to create another YAML or properties file containing only the properties for production. The name of the file should be like `application-<profile name>.yml` or `application-<profile name>.properties`. For example, application-prod.yml for production.
+
+Another way works only with YAML configuration. It involves placing profile-specific properties alongside non-profiled properties in `application.yml` separated by three hyphens and the `spring.profiles` property to name the profile.
+
+```yaml
+# for development
+logging:
+  level:
+    tacos: DEBUG
+
+---
+spring:
+  profiles: prod
+  
+  datasource:
+    url: jdbc:mysql://localhost/tacocloud
+    username: tacouser
+    password: tacopassword
+ 
+logging:
+  level:
+    tacos: WARN
+```
+
+First section doesn't specify any `spring.profiles` and therefore its properties are common to all profiels or are defaults if the active profiel doesn't otherwise have the properties set. If profile named `prod` is active, then the `logging.level.tacos` property will be overridden with WARN.
+
+The profile can be activated using profile name given to `spring.profiles.active` property in `application.yml` file. Instead, better options is to set environment variable as `export SPRING_PROFILES_ACTIVE=prod`. From then on, any applications deployed to that machine will have the prod profile active and the corresponding configuration properties would take precedence over the properties in the default profile. We can also pass configuration using `java -jar taco-cloud.jar --spring.profiles.active=prod`.
+
+We can also have more than one profiles active using `export SPRING_PROFILES_ACTIVE=prod,audit,ha`. In YAML it can be done as below.
+
+```yaml
+spring:
+  profiles:
+    active:
+    - prod
+    - audit
+    - ha
+```
+
+We can also **conditionally create beans with profiles**. Normally, any bean declared in a Java configuration class is created regardless of which profile is active. If we need some beans be created if a certain profile is active, we can use `@Profile` to designate beans as only being applicable to a given profile. For example, `CommandLineRunner` bean is used to load embedded database with ingredeitn data when application starts. It would be unnecessary in a production application. To prevent this data loading, we can use `@Profile("dev")`.
+
+```java
+@Bean
+@Profile({"dev", "qa"})
+public CommandLineRunner dataLoader(IngredientRepository repo,
+      UserRepository userRepo, PasswordEncoder encoder) {
+
+  ...
+
+}
+```
+
+There can be another option that we can enable `CommandLineRunner` if profile is not prod using `@Profile("!prod")`. The exclamation mark (!) negates the profile name. We can even extract such code into separate configuration class named `DevelopmentConfig`.
+

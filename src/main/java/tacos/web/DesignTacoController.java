@@ -81,7 +81,7 @@ public class DesignTacoController {
 
   @PostMapping
   public String processDesign(
-      @Valid Taco design, Errors errors, 
+      @Valid Taco taco, Errors errors, 
       @ModelAttribute Order order) {
 
     if (errors.hasErrors()) {
@@ -90,7 +90,7 @@ public class DesignTacoController {
 
     log.info(" --- Saving taco");
     // save Taco
-    Taco saved = designRepo.save(design);
+    Taco saved = designRepo.save(taco);
     // add Taco to list orders table
     order.addDesign(saved);
 
