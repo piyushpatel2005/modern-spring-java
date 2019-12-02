@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Taco Cloud</title>
+    <link rel="stylesheet" th:href="@{/styles.css}" />
+  </head>
+  <body>
+    <h1>Discount codes:</h1>
+    <ul>
+      <li the:each="code: ${codes}">
+        Use code <b>"<span th:text="${code.key}"></span>"</b> for <span th:text="${code.value}"></span>% off your order.
+      </li>
+    </ul>
+  </body>
+</html>

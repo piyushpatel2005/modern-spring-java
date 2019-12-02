@@ -39,7 +39,7 @@ public class OrderController {
   public String orderForm(@AuthenticationPrincipal User user, @ModelAttribute Order order) {
   	// set authenticated user details in order form
   	if (order.getDeliveryName() == null) {
-  		order.setDeliveryName(user.getFullName());
+  		order.setDeliveryName(user.getFullname());
   	}
   	if (order.getDeliveryStreet() == null) {
   		order.setDeliveryStreet(user.getStreet());
