@@ -72,3 +72,7 @@ JDBC support is in `JdbcTemplate` class. To work with JdbcTemplate, we need to a
 ## Configuring properties
 
 [Customizing Spring application with configuration](notes/config.md)
+
+## REST services
+
+[REST Services with Spring](notes/rest-services.md)
